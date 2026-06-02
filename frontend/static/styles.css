@@ -1,17 +1,25 @@
-body { font-family: Arial, sans-serif; background:#f5f7fb; color:#222; }
-.container { max-width:900px; margin:24px auto; background:white; padding:20px; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+body { font-family: Arial, sans-serif; background:#dfe5f3; color:#222; }
+.container { max-width:1100px; margin:24px auto; background:rgb(255, 255, 255); padding:20px; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
 h1 { margin-top:0 }
-section { margin-bottom:18px }
+section { margin-bottom:18px; padding-top:18px; border-top:1px solid #a8adb8; }
+section:first-of-type { padding-top:0; border-top:none; }
 .boards { display:flex; gap:16px; }
 .board { flex:1; background:#9ab3da; border:1px solid #eef3fb; border-radius:8px; padding:10px; min-height:120px }
 .board h3 { margin-top:0; margin-bottom:8px; font-size:1.05em }
 /* task card tweaks for board layout */
-.board li { background:white; margin-bottom:8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); padding:10px }
-.board li strong { display:block; font-size:1.18rem; margin-bottom:6px }
-.board li .desc { font-size:0.98rem; color:#555; margin-top:6px }
+.board { min-width:0 }
+.board li { background:white; margin-bottom:8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); padding:10px; width:100%; box-sizing:border-box; }
+.board li strong { display:block; font-size:1.18rem; margin-bottom:6px; word-break: break-word; white-space: normal; }
+.board li .desc { font-size:0.98rem; color:#555; margin-top:6px; word-break: break-word; white-space: normal; }
 
-/* De-emphasize status selector so title/description sejam o foco */
+/* De-emphasize status selector so title/description sejam the foco */
 .hidden { display:none; }
+.search-results { margin-top:12px; }
+.search-results .task-card { background:#9ab3da; margin-bottom:12px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); padding:12px; width:100%; box-sizing:border-box; }
+.search-results .task-card strong { display:block; font-size:1.16rem; margin-bottom:6px; }
+.search-results .task-card .desc { font-size:0.95rem; color:#444; margin-top:4px; }
+.search-results .task-card .search-status-row { margin-top:10px; gap:6px; }
+.search-results .task-card .status-text { color:#3d3d3d; font-weight:600; }
 .field-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
 .field-row label { min-width:90px; font-weight:600; }
 .field-row input, .field-row select, .field-row textarea { flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; }
@@ -31,7 +39,7 @@ li { padding:12px; border-bottom:1px solid #eee; }
 .actions { margin-top:12px }
 .actions .delete { background:#eb5757; }
 .actions .edit { background:#2f80ed; }
-.actions button { margin-right:6px; padding:6px 8px; font-size:0.85rem; border-radius:4px }
+.actions button { margin-right:6px; padding:4px 7px; font-size:0.8rem; border-radius:4px; }
 .actions button:hover { opacity:0.95; }
 
 .modal {

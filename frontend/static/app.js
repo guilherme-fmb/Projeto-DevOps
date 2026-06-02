@@ -62,30 +62,45 @@ async function createTask() {
   }
 }
 
+function createSearchCard(task) {
+  return `
+    <div class="task-card">
+      <strong>${task.title}</strong>
+      <div class="desc">${task.description || 'Sem descrição'}</div>
+      <div class="status-row search-status-row">
+        <span>Status:</span>
+        <span class="status-text">${task.status === 'pending' ? 'Aguardando' : task.status === 'in_progress' ? 'Em andamento' : 'Concluída'}</span>
+      </div>
+    </div>
+  `;
+}
+
 async function fetchTask() {
   const name = document.getElementById('fetchName').value.trim().toLowerCase();
-  const pre = document.getElementById('singleResult');
+  const results = document.getElementById('searchResults');
+  if (!results) return;
+  results.innerHTML = '';
+
   if (!name) {
-    pre.textContent = 'Informe um nome para buscar.';
+    results.textContent = 'Informe um nome para buscar.';
     return;
   }
 
-  // fetch all tasks and filter client-side by title (case-insensitive, partial match)
   try {
     const res = await fetch(`${apiBase}/tasks`, { cache: 'no-store' });
     if (!res.ok) {
-      pre.textContent = `Erro ao buscar tarefas: ${res.status}`;
+      results.textContent = `Erro ao buscar tarefas: ${res.status}`;
       return;
     }
     const tasks = await res.json();
     const matches = tasks.filter(t => (t.title || '').toLowerCase().includes(name));
     if (matches.length === 0) {
-      pre.textContent = 'Nenhuma tarefa encontrada para esse nome.';
-    } else {
-      pre.textContent = JSON.stringify(matches, null, 2);
+      results.textContent = 'Nenhuma tarefa encontrada para esse nome.';
+      return;
     }
+    results.innerHTML = matches.map(createSearchCard).join('');
   } catch (err) {
-    pre.textContent = 'Erro de rede ao buscar tarefas: ' + (err.message || err);
+    results.textContent = 'Erro de rede ao buscar tarefas: ' + (err.message || err);
   }
 }
 
