@@ -54,14 +54,29 @@ async function createTask() {
 }
 
 async function fetchTask() {
-  const id = document.getElementById('fetchId').value;
-  const res = await fetch(`${apiBase}/tasks/${id}`);
+  const name = document.getElementById('fetchName').value.trim().toLowerCase();
   const pre = document.getElementById('singleResult');
-  if (res.ok) {
-    const data = await res.json();
-    pre.textContent = JSON.stringify(data, null, 2);
-  } else {
-    pre.textContent = `Erro: ${res.status}`;
+  if (!name) {
+    pre.textContent = 'Informe um nome para buscar.';
+    return;
+  }
+
+  // fetch all tasks and filter client-side by title (case-insensitive, partial match)
+  try {
+    const res = await fetch(`${apiBase}/tasks`, { cache: 'no-store' });
+    if (!res.ok) {
+      pre.textContent = `Erro ao buscar tarefas: ${res.status}`;
+      return;
+    }
+    const tasks = await res.json();
+    const matches = tasks.filter(t => (t.title || '').toLowerCase().includes(name));
+    if (matches.length === 0) {
+      pre.textContent = 'Nenhuma tarefa encontrada para esse nome.';
+    } else {
+      pre.textContent = JSON.stringify(matches, null, 2);
+    }
+  } catch (err) {
+    pre.textContent = 'Erro de rede ao buscar tarefas: ' + (err.message || err);
   }
 }
 
