@@ -3,10 +3,14 @@ body { font-family: Arial, sans-serif; background:#f5f7fb; color:#222; }
 h1 { margin-top:0 }
 section { margin-bottom:18px }
 .boards { display:flex; gap:16px; }
-.board { flex:1; background:#fbfdff; border:1px solid #eef3fb; border-radius:8px; padding:10px; min-height:120px }
+.board { flex:1; background:#9ab3da; border:1px solid #eef3fb; border-radius:8px; padding:10px; min-height:120px }
 .board h3 { margin-top:0; margin-bottom:8px; font-size:1.05em }
 /* task card tweaks for board layout */
 .board li { background:white; margin-bottom:8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); padding:10px }
+.board li strong { display:block; font-size:1.18rem; margin-bottom:6px }
+.board li .desc { font-size:0.98rem; color:#555; margin-top:6px }
+
+/* De-emphasize status selector so title/description sejam o foco */
 .hidden { display:none; }
 .field-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
 .field-row label { min-width:90px; font-weight:600; }
@@ -18,12 +22,16 @@ button.secondary { background:#999; }
 button:hover { opacity:0.95; }
 ul { list-style:none; padding-left:0 }
 li { padding:12px; border-bottom:1px solid #eee; }
-.status-row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+.status-row { display:flex; gap:4px; align-items:center; margin-top:8px; font-size:0.85rem; color:#6d7381; }
+.status-row label { min-width:unset; margin-bottom:0; font-weight:400; }
+.status-row select { padding:3px 6px; font-size:0.85rem; border:1px solid #e6eaf3; background:transparent; color:#606a74; border-radius:4px; width:auto; min-width:100px; }
+.status-row select:focus { outline:2px solid rgba(50, 118, 207, 0.12); }
+.status-row select option { font-size:0.85rem; }
 .desc { font-size:0.9em; color:#555; margin-top:6px; }
 .actions { margin-top:12px }
 .actions .delete { background:#eb5757; }
 .actions .edit { background:#2f80ed; }
-.actions button { margin-right:6px; }
+.actions button { margin-right:6px; padding:6px 8px; font-size:0.85rem; border-radius:4px }
 .actions button:hover { opacity:0.95; }
 
 .modal {

@@ -160,7 +160,6 @@ async function saveEdit() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('createBtn').addEventListener('click', createTask);
-  document.getElementById('refreshBtn').addEventListener('click', listTasks);
   document.getElementById('fetchBtn').addEventListener('click', fetchTask);
   const saveEditBtn = document.getElementById('saveEditBtn');
   if (saveEditBtn) saveEditBtn.addEventListener('click', saveEdit);
