@@ -123,6 +123,9 @@ Para executar os testes da aplicação:
 python -m pytest tests/
 ```
 
+### Cobertura de Testes: 
+![alt text](image.png)
+
 ## 💡 Desenvolvimento
 
 ### Modo Debug
@@ -156,3 +159,14 @@ RUN pip install -r requirements.txt
 COPY . .
 CMD ["python", "app.py"]
 ```
+
+## 🖥️ Frontend simples
+
+Foi adicionada uma interface web minimalista que consome as rotas da API.
+
+- Arquivo principal: `static/index.html`
+- Script cliente: `static/app.js`
+
+Acesse a interface em: `http://localhost:5000/ui`
+
+Observação: a interface é servida pelo Flask a partir da pasta `static`. Abra a URL acima após iniciar o servidor com `python app.py`.

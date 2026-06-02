@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task Manager UI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <script>
+      window.API_BASE = 'http://localhost:5000';
+    </script>
+    <div class="container">
+      <h1>Task Manager</h1>
+
+      <section class="create">
+        <h2>Criar tarefa</h2>
+        <div class="field-row">
+          <label for="title">Título</label>
+          <input id="title" placeholder="Título" />
+        </div>
+        <div class="field-row">
+          <label for="description">Descrição</label>
+          <input id="description" placeholder="Descrição (opcional)" />
+        </div>
+        <button id="createBtn">Criar</button>
+      </section>
+
+      <section class="list">
+        <h2>Tarefas</h2>
+        <button id="refreshBtn">Atualizar lista</button>
+        <ul id="tasks"></ul>
+      </section>
+
+      <section class="edit hidden" id="editSection">
+        <h2>Editar tarefa</h2>
+        <div class="field-row">
+          <label for="editTitle">Título</label>
+          <input id="editTitle" placeholder="Título" />
+        </div>
+        <div class="field-row">
+          <label for="editDescription">Descrição</label>
+          <textarea id="editDescription" placeholder="Descrição"></textarea>
+        </div>
+        <div class="field-row buttons-row">
+          <button id="saveEditBtn">Salvar</button>
+          <button id="cancelEditBtn">Cancelar</button>
+        </div>
+      </section>
+
+      <section class="single">
+        <h2>Buscar por ID</h2>
+        <input id="fetchId" placeholder="ID da tarefa" />
+        <button id="fetchBtn">Buscar</button>
+        <pre id="singleResult"></pre>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

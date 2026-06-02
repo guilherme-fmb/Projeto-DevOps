@@ -2,6 +2,7 @@ from flask import Flask
 from dotenv import load_dotenv
 import os
 import logging
+from flask_cors import CORS
 
 from database import db
 from routes import api
@@ -9,6 +10,7 @@ from routes import api
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 # Prefer explicit DATABASE_URL/SQLALCHEMY_DATABASE_URI environment variable
 # If not provided, try building a Postgres URI from individual env vars.
