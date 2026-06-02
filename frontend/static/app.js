@@ -3,8 +3,13 @@ const apiBase = window.API_BASE || window.location.origin;
 async function listTasks() {
   const res = await fetch(`${apiBase}/tasks`, { cache: 'no-store' });
   const tasks = await res.json();
-  const ul = document.getElementById('tasks');
-  ul.innerHTML = '';
+  const pendingUl = document.getElementById('tasks-pending');
+  const inProgressUl = document.getElementById('tasks-in_progress');
+  const doneUl = document.getElementById('tasks-done');
+  if (pendingUl) pendingUl.innerHTML = '';
+  if (inProgressUl) inProgressUl.innerHTML = '';
+  if (doneUl) doneUl.innerHTML = '';
+
   tasks.forEach(t => {
     const li = document.createElement('li');
     li.innerHTML = `
@@ -23,7 +28,11 @@ async function listTasks() {
         <button data-id="${t.id}" class="delete">Remover</button>
       </div>
     `;
-    ul.appendChild(li);
+
+    if (t.status === 'pending' && pendingUl) pendingUl.appendChild(li);
+    else if (t.status === 'in_progress' && inProgressUl) inProgressUl.appendChild(li);
+    else if (t.status === 'done' && doneUl) doneUl.appendChild(li);
+    else if (pendingUl) pendingUl.appendChild(li);
   });
 }
 
@@ -160,26 +169,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModalBtn = document.getElementById('closeModalBtn');
   if (closeModalBtn) closeModalBtn.addEventListener('click', hideEditModal);
 
-  document.getElementById('tasks').addEventListener('click', (e) => {
-    if (e.target.matches('.delete')) {
-      deleteTask(e.target.dataset.id);
-    }
-    if (e.target.matches('.edit')) {
-      const id = e.target.dataset.id;
-      // Store id as fallback in localStorage then redirect to edit page
-      try { localStorage.setItem('edit_task_id', String(id)); } catch (err) { /* ignore */ }
-      // Prefer explicit query param but allow relative path
-      window.location.href = `./edit.html?id=${encodeURIComponent(id)}`;
-    }
-  });
+  const boards = document.querySelector('.boards');
+  if (boards) {
+    boards.addEventListener('click', (e) => {
+      if (e.target.matches('.delete')) {
+        deleteTask(e.target.dataset.id);
+      }
+      if (e.target.matches('.edit')) {
+        const id = e.target.dataset.id;
+        try { localStorage.setItem('edit_task_id', String(id)); } catch (err) { /* ignore */ }
+        window.location.href = `./edit.html?id=${encodeURIComponent(id)}`;
+      }
+    });
 
-  document.getElementById('tasks').addEventListener('change', (e) => {
-    if (e.target.id && e.target.id.startsWith('status-')) {
-      const id = e.target.id.replace('status-', '');
-      const previous = e.target.dataset.current || '';
-      updateStatus(id, e.target.value, previous, e.target);
-    }
-  });
+    boards.addEventListener('change', (e) => {
+      if (e.target.id && e.target.id.startsWith('status-')) {
+        const id = e.target.id.replace('status-', '');
+        const previous = e.target.dataset.current || '';
+        updateStatus(id, e.target.value, previous, e.target);
+      }
+    });
+  }
 
   const editModalEl = document.getElementById('editModal');
   if (editModalEl) {

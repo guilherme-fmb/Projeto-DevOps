@@ -29,7 +29,20 @@
       <section class="list">
         <h2>Tarefas</h2>
         <button id="refreshBtn">Atualizar lista</button>
-        <ul id="tasks"></ul>
+        <div class="boards">
+          <div class="board">
+            <h3>Aguardando</h3>
+            <ul id="tasks-pending"></ul>
+          </div>
+          <div class="board">
+            <h3>Em andamento</h3>
+            <ul id="tasks-in_progress"></ul>
+          </div>
+          <div class="board">
+            <h3>Concluídas</h3>
+            <ul id="tasks-done"></ul>
+          </div>
+        </div>
       </section>
 
       <!-- editSection removed: using modal overlay instead -->
