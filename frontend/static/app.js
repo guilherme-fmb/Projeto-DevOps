@@ -1,7 +1,7 @@
 const apiBase = window.API_BASE || window.location.origin;
 
 async function listTasks() {
-  const res = await fetch(`${apiBase}/tasks`);
+  const res = await fetch(`${apiBase}/tasks`, { cache: 'no-store' });
   const tasks = await res.json();
   const ul = document.getElementById('tasks');
   ul.innerHTML = '';
@@ -12,7 +12,7 @@ async function listTasks() {
       <div class="desc">${t.description || ''}</div>
       <div class="status-row">
         <label for="status-${t.id}">Status:</label>
-        <select id="status-${t.id}">
+        <select id="status-${t.id}" data-current="${t.status}">
           <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Aguardando</option>
           <option value="in_progress" ${t.status === 'in_progress' ? 'selected' : ''}>Em andamento</option>
           <option value="done" ${t.status === 'done' ? 'selected' : ''}>Concluída</option>
@@ -66,29 +66,46 @@ async function fetchTask() {
 }
 
 async function deleteTask(id) {
-  const res = await fetch(`${apiBase}/tasks/${id}`, { method: 'DELETE' });
-  if (res.ok) listTasks();
+  try {
+    const res = await fetch(`${apiBase}/tasks/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      listTasks();
+    } else {
+      const err = await res.json().catch(() => null);
+      alert(err?.error || `Falha ao remover (status ${res.status})`);
+    }
+  } catch (err) {
+    alert('Erro de rede ao remover: ' + (err.message || err));
+  }
 }
 
-async function updateStatus(id, status) {
+async function updateStatus(id, status, previous, selectEl) {
   const res = await fetch(`${apiBase}/tasks/${id}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status })
   });
-  if (res.ok) listTasks();
-  else alert('Falha ao atualizar status');
+  if (res.ok) {
+    // update element's current dataset to reflect persisted status
+    if (selectEl) selectEl.dataset.current = status;
+    // refresh list to reflect any server-side ordering/changes
+    listTasks();
+  } else {
+    alert('Falha ao atualizar status');
+    // revert to previous value in UI
+    if (selectEl) selectEl.value = previous;
+  }
 }
 
-function showEditPanel(task) {
-  document.getElementById('editSection').classList.remove('hidden');
+function showEditModal(task) {
   document.getElementById('editTitle').value = task.title || '';
   document.getElementById('editDescription').value = task.description || '';
   document.getElementById('saveEditBtn').dataset.id = task.id;
+  document.getElementById('editModal').classList.remove('hidden');
 }
 
-function hideEditPanel() {
-  document.getElementById('editSection').classList.add('hidden');
+function hideEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
   document.getElementById('saveEditBtn').dataset.id = '';
 }
 
@@ -109,7 +126,7 @@ async function saveEdit() {
   });
 
   if (res.ok) {
-    hideEditPanel();
+    hideEditModal();
     listTasks();
   } else {
     const error = await res.json().catch(() => null);
@@ -121,8 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('createBtn').addEventListener('click', createTask);
   document.getElementById('refreshBtn').addEventListener('click', listTasks);
   document.getElementById('fetchBtn').addEventListener('click', fetchTask);
-  document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
-  document.getElementById('cancelEditBtn').addEventListener('click', hideEditPanel);
+  const saveEditBtn = document.getElementById('saveEditBtn');
+  if (saveEditBtn) saveEditBtn.addEventListener('click', saveEdit);
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  if (cancelEditBtn) cancelEditBtn.addEventListener('click', hideEditModal);
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  if (closeModalBtn) closeModalBtn.addEventListener('click', hideEditModal);
 
   document.getElementById('tasks').addEventListener('click', (e) => {
     if (e.target.matches('.delete')) {
@@ -130,18 +151,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (e.target.matches('.edit')) {
       const id = e.target.dataset.id;
-      fetch(`${apiBase}/tasks/${id}`)
-        .then(res => res.json())
-        .then(task => showEditPanel(task));
+      // Redirect to standalone edit page
+      window.location.href = `edit.html?id=${id}`;
     }
   });
 
   document.getElementById('tasks').addEventListener('change', (e) => {
     if (e.target.id && e.target.id.startsWith('status-')) {
       const id = e.target.id.replace('status-', '');
-      updateStatus(id, e.target.value);
+      const previous = e.target.dataset.current || '';
+      updateStatus(id, e.target.value, previous, e.target);
     }
   });
+
+  const editModalEl = document.getElementById('editModal');
+  if (editModalEl) {
+    editModalEl.addEventListener('click', (e) => {
+      if (e.target.id === 'editModal') {
+        hideEditModal();
+      }
+    });
+  }
 
   listTasks();
 });

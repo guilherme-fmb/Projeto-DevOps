@@ -7,8 +7,9 @@ section { margin-bottom:18px }
 .field-row label { min-width:90px; font-weight:600; }
 .field-row input, .field-row select, .field-row textarea { flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; }
 .field-row textarea { min-height:80px; resize: vertical; }
-.buttons-row { justify-content:flex-start; }
+.buttons-row { display:flex; gap:10px; justify-content:flex-start; }
 button { padding:8px 10px; cursor:pointer; border:none; background:#2f80ed; color:white; border-radius:4px; }
+button.secondary { background:#999; }
 button:hover { opacity:0.95; }
 ul { list-style:none; padding-left:0 }
 li { padding:12px; border-bottom:1px solid #eee; }
@@ -17,3 +18,40 @@ li { padding:12px; border-bottom:1px solid #eee; }
 .actions { margin-top:12px }
 .actions button { margin-right:6px; background:#eb5757; }
 .actions button:hover { opacity:0.95; }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: min(90%, 500px);
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #444;
+}
