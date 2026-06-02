@@ -46,7 +46,19 @@ function cancel() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const id = getQueryParam('id');
+  let id = getQueryParam('id');
+  if (!id) {
+    // fallback: try localStorage (set by index before redirect)
+    try {
+      id = localStorage.getItem('edit_task_id');
+      if (id) {
+        // consume the fallback so it doesn't persist
+        localStorage.removeItem('edit_task_id');
+      }
+    } catch (err) {
+      id = null;
+    }
+  }
   if (!id) {
     alert('ID da tarefa ausente');
     window.location.href = 'index.html';

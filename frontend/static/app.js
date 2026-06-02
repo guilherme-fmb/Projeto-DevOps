@@ -151,8 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (e.target.matches('.edit')) {
       const id = e.target.dataset.id;
-      // Redirect to standalone edit page
-      window.location.href = `edit.html?id=${id}`;
+      // Store id as fallback in localStorage then redirect to edit page
+      try { localStorage.setItem('edit_task_id', String(id)); } catch (err) { /* ignore */ }
+      // Prefer explicit query param but allow relative path
+      window.location.href = `./edit.html?id=${encodeURIComponent(id)}`;
     }
   });
 
