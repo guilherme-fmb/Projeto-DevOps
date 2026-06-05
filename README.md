@@ -189,13 +189,13 @@ Quando o `docker compose up` roda, o Compose cria uma rede bridge privada (`proj
 
 ```
 ┌──────────┐   browser → :8080   ┌──────────┐
-│ Browser  │ ───────────────────▶│ frontend │   (HTML/CSS/JS)
+│ Browser  │ ───────────────────>│ frontend │   (HTML/CSS/JS)
 └────┬─────┘                     └──────────┘
      │ browser → :5000
      ▼
 ┌──────────┐  TCP postgres:5432  ┌──────────┐
-│ backend  │ ───────────────────▶│ postgres │   (volume postgres_data)
-│  Flask   │ ◀───────────────────│   16     │
+│ backend  │ ───────────────────>│ postgres │   (volume postgres_data)
+│  Flask   │ <───────────────────│   16     │
 └──────────┘    SQL responses    └──────────┘
        └─── rede interna projeto-devops_default ───┘
 ```
