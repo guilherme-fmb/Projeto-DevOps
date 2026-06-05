@@ -1,10 +1,34 @@
 services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: taskdb
+      POSTGRES_USER: taskuser
+      POSTGRES_PASSWORD: taskpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskuser -d taskdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: ./backend
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: taskdb
+      DB_USER: taskuser
+      DB_PASSWORD: taskpass
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -34,3 +58,4 @@ services:
 volumes:
   jenkins_home:
   jenkins_pip_cache:
+  postgres_data:
