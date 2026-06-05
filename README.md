@@ -7,13 +7,15 @@ Aplicação web para gerenciamento de tarefas com backend em Flask e frontend es
 ```
 .
 ├── backend/              # API REST em Flask
-│   ├── app.py           # Aplicação principal
-│   ├── routes.py        # Endpoints da API
-│   ├── models.py        # Modelos de dados (SQLAlchemy)
-│   ├── database.py      # Configuração do banco de dados
-│   ├── requirements.txt  # Dependências Python
-│   ├── Dockerfile       # Imagem Docker do backend
-│   └── tests/           # Testes da API
+│   ├── app.py                   # Aplicação principal
+│   ├── routes.py                # Endpoints da API
+│   ├── models.py                # Modelos de dados (SQLAlchemy)
+│   ├── database.py              # Configuração do banco de dados
+│   ├── send_email.py            # Envio de e-mail (usado pela pipeline)
+│   ├── requirements.txt         # Dependências Python
+│   ├── jenkins_requirements.txt # Dependências instaladas no Jenkins
+│   ├── Dockerfile               # Imagem Docker do backend
+│   └── tests/                   # Testes da API
 │
 ├── frontend/            # Aplicação web estática
 │   ├── index.html       # Página principal
@@ -21,8 +23,7 @@ Aplicação web para gerenciamento de tarefas com backend em Flask e frontend es
 │   ├── app.js           # Lógica da interface
 │   ├── edit.js          # Lógica de edição
 │   ├── styles.css       # Estilos CSS
-│   ├── Dockerfile       # Imagem Docker do frontend
-│   └── tests/           # Testes do frontend
+│   └── Dockerfile       # Imagem Docker do frontend
 │
 ├── docker-compose.yml   # Orquestração dos serviços
 ├── Dockerfile.jenkins   # Imagem Docker do Jenkins
@@ -255,17 +256,25 @@ Reiniciar o `backend` não afeta os dados — eles vivem no Postgres. Reiniciar 
 
 ## Endpoints da API
 
+> As rotas são registradas **sem prefixo `/api`**. A base é a raiz do backend (`http://localhost:5000`).
+
 ### Tarefas
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `GET` | `/api/tasks` | Lista todas as tarefas |
-| `POST` | `/api/tasks` | Cria uma nova tarefa |
-| `PATCH` | `/api/tasks/<id>/status` | Atualiza status da tarefa |
-| `DELETE` | `/api/tasks/<id>` | Deleta uma tarefa |
-| `GET` | `/api/tasks/search/<title>` | Busca tarefas por título |
+| `GET` | `/` | Mensagem de status da API (JSON) |
+| `GET` | `/tasks` | Lista todas as tarefas |
+| `POST` | `/tasks` | Cria uma nova tarefa |
+| `GET` | `/tasks/<id>` | Retorna uma tarefa específica |
+| `PUT` | `/tasks/<id>` | Atualiza título, descrição e/ou status |
+| `PATCH` | `/tasks/<id>/status` | Atualiza apenas o status da tarefa |
+| `DELETE` | `/tasks/<id>` | Deleta uma tarefa |
+| `GET` | `/statuses` | Lista os status válidos com rótulos (pt-BR) |
+| `GET` | `/ui` | Serve a interface estática via Flask |
 
-### Frontend
+> A busca por título é feita no **frontend** (`app.js`), filtrando a lista de `GET /tasks` no navegador — não existe endpoint de busca no backend.
+
+### Frontend (servido pelo `http.server` na porta 8080)
 
 | Endpoint | Descrição |
 |----------|-----------|
@@ -278,13 +287,26 @@ Reiniciar o `backend` não afeta os dados — eles vivem no Postgres. Reiniciar 
 
 ### Backend
 
-Podem ser configuradas no `.env` ou passadas ao container:
+O `backend/app.py` monta a URI do banco nesta ordem de precedência:
+
+1. `SQLALCHEMY_DATABASE_URI` (se definida)
+2. `DATABASE_URL` (se definida)
+3. As variáveis `DB_*` abaixo (usadas pelo `docker-compose.yml`)
+4. Fallback automático para SQLite local (`sqlite:///tasks.db`)
 
 ```bash
-DATABASE_URL=sqlite:///tasks.db  # ou postgresql://user:pass@host/db
-FLASK_ENV=production
-FLASK_DEBUG=0
+# Opção A: URI completa
+DATABASE_URL=postgresql://taskuser:taskpass@postgres:5432/taskdb
+
+# Opção B: componentes individuais (usados no Compose)
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=taskdb
+DB_USER=taskuser
+DB_PASSWORD=taskpass
 ```
+
+Se nenhuma dessas variáveis for definida, o backend cai no SQLite local automaticamente.
 
 ---
 
@@ -330,12 +352,7 @@ cd backend
 pytest -q
 ```
 
-### Frontend
-
-```bash
-cd frontend
-pytest -q
-```
+> Não há testes automatizados no frontend no momento.
 
 ---
 
