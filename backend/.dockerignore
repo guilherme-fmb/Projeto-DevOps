@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.pytest_cache
+.coverage
+htmlcov
+coverage.xml
+instance
+tests
+*.tar
+*.md
+.env
+venv
+.venv
