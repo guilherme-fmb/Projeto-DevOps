@@ -36,7 +36,7 @@ cd backend && pytest tests/test_routes.py::test_create_task -v
 
 ## Testing
 
-Tests use an in-memory SQLite database configured in `backend/tests/conftest.py`. The `app` and `client` fixtures create a fresh DB per test. All tests run from the `backend/` directory.
+Tests use an in-memory SQLite database configured in `backend/tests/conftest.py`. The `app` and `client` fixtures create a fresh DB per test. All tests run from the `backend/` directory. Current backend coverage is 96% (see `backend/image.png` for the full report).
 
 ## Notes
 

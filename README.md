@@ -58,7 +58,7 @@ O frontend estará disponível em `http://localhost:8080`
 ## Como Rodar com Docker Compose
 
 ### Requisitos
-- Docker
+- Docker (Docker Desktop)
 - Docker Compose
 
 ### Comando
