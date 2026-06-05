@@ -72,16 +72,18 @@ docker compose up --build
 ```
 
 Isso irá:
-1. Construir a imagem do backend
-2. Construir a imagem do frontend
-3. Construir a imagem do Jenkins
-4. Iniciar todos os serviços
+1. Baixar a imagem do Postgres
+2. Construir a imagem do backend
+3. Construir a imagem do frontend
+4. Construir a imagem do Jenkins
+5. Iniciar todos os serviços (o backend espera o Postgres ficar saudável)
 
 ### Acessar os serviços
 
 - **Frontend**: `http://localhost:8080`
 - **Backend API**: `http://localhost:5000`
 - **Jenkins**: `http://localhost:9090`
+- **Postgres**: somente interno (`postgres:5432` dentro da rede do Compose)
 
 ### Parar os serviços
 
@@ -94,13 +96,39 @@ docker compose down
 ## Sobre o docker-compose.yml
 
 ```yaml
+name: projeto-devops
+
 services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: taskdb
+      POSTGRES_USER: taskuser
+      POSTGRES_PASSWORD: taskpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskuser -d taskdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: ./backend
     ports:
       - "5000:5000"
     restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: taskdb
+      DB_USER: taskuser
+      DB_PASSWORD: taskpass
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -125,22 +153,79 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_pip_cache:/root/.cache/pip
 
 volumes:
   jenkins_home:
+  jenkins_pip_cache:
+  postgres_data:
 ```
 
 ### Explicação
 
 | Campo | Descrição |
 |-------|-----------|
+| `name` | Fixa o nome do projeto Compose (prefixo de containers/volumes/redes) |
 | `services` | Define os containers que serão criados |
 | `build.context` | Caminho onde está o `Dockerfile` para cada serviço |
+| `image` | Usa uma imagem já pronta (no caso do postgres, sem build local) |
 | `ports` | Mapeamento de portas (porta_host:porta_container) |
+| `environment` | Variáveis injetadas no container — backend usa para montar a URI do Postgres |
 | `restart: unless-stopped` | Reinicia o container caso falhe, a menos que seja manualmente parado |
-| `depends_on` | O frontend aguarda o backend estar pronto antes de iniciar |
+| `depends_on` | Backend aguarda `postgres` ficar saudável; frontend aguarda backend iniciar |
+| `healthcheck` | `pg_isready` valida que o Postgres está aceitando conexões antes do backend subir |
 | `privileged: true` | Necessário para que o Jenkins acesse o Docker do host |
-| `volumes` | `jenkins_home` persiste o estado; `docker.sock` permite builds no host |
+| `volumes` | `postgres_data` persiste o banco; `jenkins_home` persiste o estado do Jenkins; `docker.sock` permite builds no host |
+
+---
+
+## Comunicação entre Containers: Backend ↔ PostgreSQL
+
+A aplicação demonstra **comunicação container-a-container** entre o `backend` (Flask) e o `postgres` usando a rede interna criada automaticamente pelo Compose.
+
+### Como funciona
+
+Quando o `docker compose up` roda, o Compose cria uma rede bridge privada (`projeto-devops_default`) onde cada serviço fica acessível pelo **nome do serviço** — não pelo IP. O backend não precisa saber o IP do Postgres; basta resolver o hostname `postgres`, que o DNS interno do Compose responde com o endereço atual do container.
+
+```
+┌──────────┐   browser → :8080   ┌──────────┐
+│ Browser  │ ───────────────────▶│ frontend │   (HTML/CSS/JS)
+└────┬─────┘                     └──────────┘
+     │ browser → :5000
+     ▼
+┌──────────┐  TCP postgres:5432  ┌──────────┐
+│ backend  │ ───────────────────▶│ postgres │   (volume postgres_data)
+│  Flask   │ ◀───────────────────│   16     │
+└──────────┘    SQL responses    └──────────┘
+       └─── rede interna projeto-devops_default ───┘
+```
+
+### O que torna isso possível
+
+1. **Variáveis de ambiente** no `backend` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`). O `backend/app.py` monta a URI:
+   ```
+   postgresql://taskuser:taskpass@postgres:5432/taskdb
+   ```
+   Trocar o backend de SQLite para Postgres não exigiu mudar uma linha de Python — só as variáveis no Compose.
+
+2. **DNS interno do Compose.** O backend chama `postgres:5432`; o Docker resolve o hostname para o IP do container correspondente. Funciona porque ambos compartilham a mesma rede do Compose.
+
+3. **`depends_on` com `condition: service_healthy`.** Garante que o backend só sobe quando o `pg_isready` do Postgres passa. Sem isso, o backend tentaria abrir conexão durante a inicialização do Postgres e quebraria.
+
+4. **Sem `ports` no Postgres.** O Postgres não expõe a porta `5432` no host — é acessível **apenas de dentro da rede do Compose**. Isso é proposital: a comunicação fica isolada entre os containers, sem expor o banco para fora.
+
+5. **Volume nomeado `postgres_data`.** Os arquivos do banco vivem fora do container. `docker compose down` derruba os containers mas os dados sobrevivem; `docker compose down -v` apaga o volume também.
+
+### Ciclo de uma requisição que toca o banco
+
+1. Browser faz `POST /tasks` em `localhost:5000`.
+2. Flask (dentro do container `backend`) recebe, monta um objeto `Task` (`backend/models.py`).
+3. SQLAlchemy pega uma conexão do pool — TCP já aberto para `postgres:5432`.
+4. Envia `INSERT INTO tasks (...) RETURNING id` pela rede interna.
+5. Postgres escreve no volume `postgres_data`, devolve o `id`.
+6. Backend serializa em JSON e responde 201 ao browser.
+
+Reiniciar o `backend` não afeta os dados — eles vivem no Postgres. Reiniciar o `postgres` derruba as conexões abertas; o backend reconecta nas próximas requisições.
 
 ---
 
