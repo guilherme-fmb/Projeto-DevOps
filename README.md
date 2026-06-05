@@ -251,6 +251,15 @@ docker compose logs frontend
 
 ---
 
+## Uso de IAs
+
+Utilizamos os seguintes modelos de LLM em pair programming:
+
+### Anthropic
+- Opus 4.6, 4.7, 4.8
+- Sonnet 4.6
+effort variado
+
 ## Licença
 
 MIT
