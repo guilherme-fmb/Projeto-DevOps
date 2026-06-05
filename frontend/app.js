@@ -12,6 +12,9 @@ async function listTasks() {
 
   tasks.forEach(t => {
     const li = document.createElement('li');
+    li.draggable = true;
+    li.dataset.id = t.id;
+    li.dataset.status = t.status;
     li.innerHTML = `
       <strong>${t.title}</strong>
       <div class="desc">${t.description || ''}</div>
@@ -183,8 +186,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModalBtn = document.getElementById('closeModalBtn');
   if (closeModalBtn) closeModalBtn.addEventListener('click', hideEditModal);
 
+  const statusByListId = {
+    'tasks-pending': 'pending',
+    'tasks-in_progress': 'in_progress',
+    'tasks-done': 'done'
+  };
+
+  let draggedId = null;
+  let draggedFromStatus = null;
+
   const boards = document.querySelector('.boards');
   if (boards) {
+    boards.addEventListener('dragstart', (e) => {
+      const li = e.target.closest('li');
+      if (!li || !li.dataset.id) return;
+      draggedId = li.dataset.id;
+      draggedFromStatus = li.dataset.status;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    boards.addEventListener('dragend', (e) => {
+      const li = e.target.closest('li');
+      if (li) li.classList.remove('dragging');
+      document.querySelectorAll('.board ul.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+
+    boards.addEventListener('dragover', (e) => {
+      const ul = e.target.closest('ul');
+      if (!ul || !(ul.id in statusByListId)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      ul.classList.add('drag-over');
+    });
+
+    boards.addEventListener('dragleave', (e) => {
+      const ul = e.target.closest('ul');
+      if (ul && !ul.contains(e.relatedTarget)) ul.classList.remove('drag-over');
+    });
+
+    boards.addEventListener('drop', (e) => {
+      const ul = e.target.closest('ul');
+      if (!ul || !(ul.id in statusByListId) || !draggedId) return;
+      e.preventDefault();
+      ul.classList.remove('drag-over');
+      const newStatus = statusByListId[ul.id];
+      if (newStatus !== draggedFromStatus) {
+        updateStatus(draggedId, newStatus, draggedFromStatus, null);
+      }
+      draggedId = null;
+      draggedFromStatus = null;
+    });
+
     boards.addEventListener('click', (e) => {
       if (e.target.matches('.delete')) {
         deleteTask(e.target.dataset.id);

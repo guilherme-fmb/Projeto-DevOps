@@ -11,6 +11,10 @@ section:first-of-type { padding-top:0; border-top:none; }
 .board { min-width:0 }
 .board li { background:white; margin-bottom:8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); padding:10px; width:100%; box-sizing:border-box; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .board li:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.board li[draggable="true"] { cursor: grab; }
+.board li.dragging { opacity:0.5; cursor: grabbing; }
+.board ul { min-height:60px; border-radius:6px; transition: background 0.15s ease, outline 0.15s ease; }
+.board ul.drag-over { background:rgba(47,128,237,0.12); outline:2px dashed #2f80ed; outline-offset:-4px; }
 .board li strong { display:block; font-size:1.18rem; margin-bottom:6px; word-break: break-word; white-space: normal; }
 .board li .desc { font-size:0.98rem; color:#555; margin-top:6px; word-break: break-word; white-space: normal; }
 
