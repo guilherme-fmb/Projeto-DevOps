@@ -477,7 +477,9 @@ Utilizamos os seguintes modelos de LLM em pair programming:
 ### Anthropic
 - Opus 4.6, 4.7, 4.8
 - Sonnet 4.6
-effort variado
+- effort variado
+### OpenAI
+- GPT-5.2
 
 ---
 
