@@ -68,3 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveBtn').addEventListener('click', save);
   document.getElementById('cancelBtn').addEventListener('click', cancel);
 });
+
+// Exported for unit tests (Node/Jest). Ignored in the browser where `module` is undefined.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { getQueryParam, loadTask, save, cancel };
+}

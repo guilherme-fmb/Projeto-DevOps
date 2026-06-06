@@ -3,3 +3,8 @@
 node_modules
 *.md
 .env
+tests
+package.json
+package-lock.json
+jest.config.js
+coverage

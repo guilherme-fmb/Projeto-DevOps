@@ -18,14 +18,6 @@ async function listTasks() {
     li.innerHTML = `
       <strong>${t.title}</strong>
       <div class="desc">${t.description || ''}</div>
-      <div class="status-row">
-        <label for="status-${t.id}">Status:</label>
-        <select id="status-${t.id}" data-current="${t.status}">
-          <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Aguardando</option>
-          <option value="in_progress" ${t.status === 'in_progress' ? 'selected' : ''}>Em andamento</option>
-          <option value="done" ${t.status === 'done' ? 'selected' : ''}>Concluída</option>
-        </select>
-      </div>
       <div class="actions">
         <button data-id="${t.id}" class="edit">Editar</button>
         <button data-id="${t.id}" class="delete">Remover</button>
@@ -121,21 +113,17 @@ async function deleteTask(id) {
   }
 }
 
-async function updateStatus(id, status, previous, selectEl) {
+async function updateStatus(id, status) {
   const res = await fetch(`${apiBase}/tasks/${id}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status })
   });
   if (res.ok) {
-    // update element's current dataset to reflect persisted status
-    if (selectEl) selectEl.dataset.current = status;
     // refresh list to reflect any server-side ordering/changes
     listTasks();
   } else {
     alert('Falha ao atualizar status');
-    // revert to previous value in UI
-    if (selectEl) selectEl.value = previous;
   }
 }
 
@@ -232,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ul.classList.remove('drag-over');
       const newStatus = statusByListId[ul.id];
       if (newStatus !== draggedFromStatus) {
-        updateStatus(draggedId, newStatus, draggedFromStatus, null);
+        updateStatus(draggedId, newStatus);
       }
       draggedId = null;
       draggedFromStatus = null;
@@ -248,14 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `./edit.html?id=${encodeURIComponent(id)}`;
       }
     });
-
-    boards.addEventListener('change', (e) => {
-      if (e.target.id && e.target.id.startsWith('status-')) {
-        const id = e.target.id.replace('status-', '');
-        const previous = e.target.dataset.current || '';
-        updateStatus(id, e.target.value, previous, e.target);
-      }
-    });
   }
 
   const editModalEl = document.getElementById('editModal');
@@ -269,3 +249,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   listTasks();
 });
+
+// Exported for unit tests (Node/Jest). Ignored in the browser where `module` is undefined.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    listTasks,
+    createTask,
+    createSearchCard,
+    fetchTask,
+    deleteTask,
+    updateStatus,
+    showEditModal,
+    hideEditModal,
+    saveEdit
+  };
+}

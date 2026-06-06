@@ -1,0 +1,29 @@
+{
+  "name": "task-manager-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vanilla JS frontend for the Task Manager app",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+      "app.js",
+      "edit.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 90,
+        "branches": 90,
+        "functions": 90,
+        "lines": 90
+      }
+    }
+  }
+}
