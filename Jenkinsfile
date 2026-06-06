@@ -41,6 +41,17 @@ pipeline {
             }
         }
 
+        stage('Testes Frontend') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                    npm ci
+                    npm run test:coverage
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker') {
             steps {
                 sh '''
