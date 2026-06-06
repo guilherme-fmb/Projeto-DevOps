@@ -1,0 +1,27 @@
+# Root build context (used by the jenkins service: context = .)
+# Keep node_modules, git history, caches and artifacts out of the build context.
+.git
+.gitignore
+
+# Node (frontend tests)
+**/node_modules
+frontend/node_modules
+
+# Python caches / coverage
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/coverage
+**/coverage.xml
+
+# Build artifacts
+*.tar
+
+# Misc local files
+sent-implementation
+TODO.md
+POSTGRES.md
+.venv
+venv
